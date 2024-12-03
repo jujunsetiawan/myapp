@@ -1,10 +1,11 @@
-import { View, Text } from 'react-native'
+import { View, Text, Button } from 'react-native'
 import React from 'react'
 
-const Login = () => {
+const Login = ({navigation}: any) => {
   return (
-    <View>
-      <Text>Login</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Login Page</Text>
+      <Button title='Login' onPress={() => navigation.navigate('Todo')} />
     </View>
   )
 }

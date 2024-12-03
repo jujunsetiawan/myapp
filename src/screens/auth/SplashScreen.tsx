@@ -5,13 +5,13 @@ const SplashScreen = ({ navigation }: any) => {
 
     useEffect(() => {
       setTimeout(() => {
-        navigation.navigate('Register')
+        navigation.navigate('Login')
       }, 3000);
     }, [])
 
   return (
-    <View>
-      <Text>SplashScreen</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 24, fontWeight: 'medium' }}>Welcome to Myapp</Text>
     </View>
   )
 }
