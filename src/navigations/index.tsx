@@ -5,6 +5,8 @@ import BottomTabs from './BottomTabs';
 import SplashScreen from '../screens/auth/SplashScreen';
 import Register from '../screens/auth/Register';
 import Login from '../screens/auth/Login';
+import TopTabs from './TopTabs';
+import Drawer from './Drawer';
 
 // const RootStack = createNativeStackNavigator({
 //     screens: {
@@ -23,7 +25,7 @@ const Navigation = () => {
                 <Stack.Screen name='SplashScreen' component={SplashScreen} />
                 <Stack.Screen name='Register' component={Register} />
                 <Stack.Screen name='Login' component={Login} />
-                <Stack.Screen name='Todo' component={BottomTabs} />
+                <Stack.Screen name='Todo' component={Drawer} />
             </Stack.Navigator>
         </NavigationContainer>
     )
