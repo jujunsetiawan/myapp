@@ -25,7 +25,7 @@ const Navigation = () => {
                 <Stack.Screen name='SplashScreen' component={SplashScreen} />
                 <Stack.Screen name='Register' component={Register} />
                 <Stack.Screen name='Login' component={Login} />
-                <Stack.Screen name='Todo' component={Drawer} />
+                <Stack.Screen name='Todo' component={BottomTabs} />
             </Stack.Navigator>
         </NavigationContainer>
     )
