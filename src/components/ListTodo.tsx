@@ -4,7 +4,7 @@ import Ionicon from '@react-native-vector-icons/ionicons'
 
 const ListTodo = ({ isLoading, onCompleted, isCompleted, isEdit, title, desc, onDelete } : {isLoading: boolean, onCompleted: () => void, isCompleted: boolean, isEdit: () => void, title: string, desc: string, onDelete: () => void}) => {
   return (
-    <View style={{ padding: 20, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: 'darkblue', marginBottom: 20 }} >
+    <View style={{ padding: 20, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: 'darkblue', marginBottom: 20, opacity: isCompleted ? 0.5 : 1 }} >
         {isLoading ? <ActivityIndicator color='darkblue' /> : (
             <>
                 <TouchableOpacity onPress={onCompleted}>
