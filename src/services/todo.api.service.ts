@@ -33,6 +33,7 @@ export const read = async(path: string) => {
 
 export const update = async(path: string, body: object) => {
     const userData = await get('user')
+
     const res = await fetch(url + path, {
         method: 'PUT',
         body: JSON.stringify(body),
@@ -53,6 +54,24 @@ export const destroy = async(path: string) => {
         headers: {
             Authorization: userData ? `Bearer ${userData.token}` : '',
             'Content-Type': 'application/json'
+        }
+    })
+
+    const response = await res.json()
+    return response
+}
+
+export const serviceImage = async(path: string, body: object, isCreate: boolean) => {
+    const userData = await get('user')
+
+    const formData = new FormData()
+    formData.append('image', body)
+
+    const res = await fetch(url + path, {
+        method: isCreate ? 'POST' : 'PUT',
+        body: formData,
+        headers: {
+            Authorization: userData ? `Bearer ${userData.token}` : ''
         }
     })
 

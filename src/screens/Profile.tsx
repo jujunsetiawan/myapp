@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Image, ActivityIndicator, View, TouchableOpacity, Alert } from 'react-native'
-import { read, update } from '../services/todo.api.service'
+import { read, serviceImage, update } from '../services/todo.api.service'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import FormField from '../components/FormField'
 import CustomButton from '../components/CustomButton'
@@ -13,7 +13,8 @@ import { clear } from '../services/asyncstorage.service'
 const Profile = ({navigation}: any) => {
   const [condition, setCondition] = useState({
     viewLoading: false,
-    buttonLoading: false
+    buttonLoading: false,
+    imageLoading: false
   })
   const [form, setForm] = useState({
     username: '',
@@ -24,13 +25,12 @@ const Profile = ({navigation}: any) => {
 
   const getProfile = async() => {
     try {
-      setCondition({...condition, viewLoading: true})
       const result = await read('/profile')
+      if(result.status !== 'success') return toast.success(result.message)
+
       return setForm({...form, username: result.user.username, email: result.user.email, avatar: result.user.avatar?._id, urlAvatar: result.user.avatar?.url })
-    } catch (error) {
-      return console.log(error)
-    } finally {
-      return setCondition({...condition, viewLoading: false})
+    } catch (error: any) {
+      return toast.error(String(error))
     }
   }
 
@@ -41,7 +41,7 @@ const Profile = ({navigation}: any) => {
       const result = await update('/profile', form)
       if(result.status !== 'error') return toast.success('update profile successfully')
 
-      getProfile()
+      await getProfile()
       return toast.error(`Failed : ${result.message}`)
     } catch (error: any) {
       return toast.error(error)
@@ -50,16 +50,21 @@ const Profile = ({navigation}: any) => {
     }
   }
 
-  const updateAvatar = async() => {
+  const uploadAvatar = async() => {
     try {
+      setCondition({...condition, imageLoading: true})
       const image = await openGallery()
-      console.log(image)
-
-      const result = await update(`/images/${form.avatar}`, {image: {name: image.path, uri: image.path, type: image.mime}})
-      console.log(result)
+      const result = await serviceImage(form.avatar ? `/images/${form.avatar}` : '/images', {name: image.filename, uri: image.path, type: image.mime}, form.avatar ? false : true)
       
-    } catch (error) {
-      console.log(error)
+      if(result.status !== 'success') return toast.error(`Failed : ${result.message}`)
+      toast.success(result.message)
+
+      setForm({...form, urlAvatar: image.path})
+      return result
+    } catch (error: any) {
+      return toast.error(String(error))
+    } finally {
+      return setCondition({...condition, imageLoading: false})
     }
   }
 
@@ -74,6 +79,21 @@ const Profile = ({navigation}: any) => {
   }
 
   useEffect(() => {
+    const getProfile = async() => {
+      try {
+        setCondition({...condition, viewLoading: true})
+
+        const result = await read('/profile')
+        if(result.status !== 'success') return toast.success(result.message)
+  
+        return setForm({...form, username: result.user.username, email: result.user.email, avatar: result.user.avatar?._id, urlAvatar: result.user.avatar?.url })
+      } catch (error: any) {
+        return toast.error(String(error))
+      } finally {
+        return setCondition({...condition, viewLoading: false})
+      }
+    }
+
     getProfile()
   }, [])
 
@@ -91,8 +111,8 @@ const Profile = ({navigation}: any) => {
           <>
             <View style={{ alignSelf: 'center', marginBottom: 50 }}>
               <Image source={{ uri: form.urlAvatar ? form.urlAvatar : 'https://cdn.vectorstock.com/i/1000v/17/16/default-avatar-anime-girl-profile-icon-vector-21171716.jpg' }} height={150} width={150} borderRadius={150/2} resizeMode='cover' />
-              <TouchableOpacity onPress={updateAvatar} style={{ position: 'absolute', bottom: 10, right: 0, backgroundColor: 'darkblue', padding: 5, borderRadius: 17, borderWidth: 2, borderColor: 'white' }}>
-                <Ionicon name='camera-outline' size={24} color='white' />
+              <TouchableOpacity onPress={uploadAvatar} style={{ position: 'absolute', bottom: 10, right: 0, backgroundColor: 'darkblue', padding: 5, borderRadius: 17, borderWidth: 2, borderColor: 'white' }}>
+                {condition.imageLoading ? <ActivityIndicator color='white' size={24} /> : <Ionicon name='camera-outline' size={24} color='white' />}
               </TouchableOpacity>
             </View>
             <FormField placeholder='Enter your username' label='Username' onChangeText={v => setForm({...form, username: v})} value={form.username} />
