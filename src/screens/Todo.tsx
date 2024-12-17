@@ -21,7 +21,8 @@ const Todo = () => {
     isOpenTask: true,
     isOpenCompleted: false,
     loadingView: false,
-    loadingList: false,
+    loadingTaskList: false,
+    loadingCompletedList: false,
     loadingButton: false,
     currentIndex: 0
   })
@@ -57,10 +58,10 @@ const Todo = () => {
     setForm({_id: v._id, title: v.title, desc: v.desc})
   }
 
-  const onDeleteTask = (id: string, title: string) => {
-    Alert.alert('Delete Task!', `Anda akan menghapus task id ${id} dengan title ${title}`, [
+  const onDeleteTask = (value: {_id: string, title: string, checked: boolean}, index: number) => {
+    Alert.alert('Delete Task!', `Anda akan menghapus task id ${value._id} dengan title ${value.title}`, [
       { text: 'Cancel'},
-      { text: 'Yakin', onPress: () => deleteTodo(id) }
+      { text: 'Yakin', onPress: () => deleteTodo(value._id, value.checked, index) }
     ])
   }
 
@@ -120,7 +121,7 @@ const Todo = () => {
 
   const onCompleted = async(value: {_id: string, title: string, checked: boolean}, i: number) => {
     try {
-      setCondition({...condition, currentIndex: i, loadingList: true})
+      setCondition({...condition, currentIndex: i, loadingTaskList: !value.checked, loadingCompletedList: value.checked})
       
       const result = await update(`/todos/${value._id}`, {checked: !value.checked})
       if(result.status !== 'success') return toast.error(result.message)
@@ -132,13 +133,13 @@ const Todo = () => {
     } catch (error) {
       
     } finally {
-      return setCondition({...condition, loadingList: false})
+      return setCondition({...condition, loadingTaskList: false, loadingCompletedList: false})
     }
   }
 
-  const deleteTodo = async(id: string) => {
+  const deleteTodo = async(id: string, checked: boolean, i: number) => {
     try {
-      setCondition({...condition, loadingList: true})
+      setCondition({...condition, currentIndex: i, loadingTaskList: !checked, loadingCompletedList: checked})
       
       const result = await destroy(`/todos/${id}`)
       if(result.status !== 'success') return toast.error(result.message)
@@ -150,7 +151,7 @@ const Todo = () => {
     } catch (error: any) {
       return toast.error(error)
     } finally {
-      return setCondition({...condition, loadingList: false})
+      return setCondition({...condition, loadingTaskList: false, loadingCompletedList: false})
     }
   }
 
@@ -193,14 +194,14 @@ const Todo = () => {
                 <Ionicon name={condition.isOpenTask ? 'chevron-down' : 'chevron-forward'} size={14} />
               </TouchableOpacity>
 
-              {todo.filter((v: {checked: boolean}) => !v.checked).map((v: {_id: string, title: string, desc: string, checked: boolean}, i) => condition.isOpenTask && <ListTodo key={i} title={v.title} desc={v.desc} isCompleted={v.checked} onCompleted={() => onCompleted(v, i)} isEdit={() => onEdit(v)} isLoading={condition.loadingList && i === condition.currentIndex} onDelete={() => onDeleteTask(v._id, v.title)} />)}
+              {todo.filter((v: {checked: boolean}) => !v.checked).map((v: {_id: string, title: string, desc: string, checked: boolean}, i) => condition.isOpenTask && <ListTodo key={i} title={v.title} desc={v.desc} isCompleted={v.checked} onCompleted={() => onCompleted(v, i)} isEdit={() => onEdit(v)} isLoading={condition.loadingTaskList && i === condition.currentIndex} onDelete={() => onDeleteTask(v, i)} />)}
 
               <TouchableOpacity onPress={openCompleted} style={{ flexDirection: 'row', padding: 5, alignItems: 'center', marginBottom: 20, width: 100 }}>
                 <Text style={{ marginRight: 10 }}>Completed</Text>
                 <Ionicon name={condition.isOpenCompleted ? 'chevron-down' : 'chevron-forward'} size={14} />
               </TouchableOpacity>
 
-              {todo.filter((v: {checked: boolean}) => v.checked).map((v: {_id: string, title: string, desc: string, checked: boolean}, i) => condition.isOpenCompleted && <ListTodo key={i} title={v.title} desc={v.desc} isCompleted={v.checked} onCompleted={() => onCompleted(v, i)} isEdit={() => onEdit(v)} isLoading={condition.loadingList && i === condition.currentIndex} onDelete={() => onDeleteTask(v._id, v.title)} />)}
+              {todo.filter((v: {checked: boolean}) => v.checked).map((v: {_id: string, title: string, desc: string, checked: boolean}, i) => condition.isOpenCompleted && <ListTodo key={i} title={v.title} desc={v.desc} isCompleted={v.checked} onCompleted={() => onCompleted(v, i)} isEdit={() => onEdit(v)} isLoading={condition.loadingCompletedList && i === condition.currentIndex} onDelete={() => onDeleteTask(v, i)} />)}
 
             </>
           ) : (
@@ -210,11 +211,10 @@ const Todo = () => {
               <Text style={{ textAlign: 'center', marginTop: 10 }}>Tap + to add your tasks</Text>
             </>
           )}
+          <FormModal title={modal.add ? 'Add Task' : 'Detail Task'} visible={modal.add || modal.edit} taskTitle={form.title} taskDesc={form.desc} onRequestClose={onRequestCloseModal} onChangeTaskTitle={v => setForm({...form, title: v})} onChangeTaskDesc={v => setForm({...form, desc: v})} buttonTitle={modal.add ? 'Add Task' : 'Edit Task'} buttonLoading={condition.loadingButton} onPressButton={modal.add ? addTodo : updateTodo} />
         </ScrollView>
         <Toasts/>
       </GestureHandlerRootView>
-
-      <FormModal title={modal.add ? 'Add Task' : 'Detail Task'} visible={modal.add || modal.edit} taskTitle={form.title} taskDesc={form.desc} onRequestClose={onRequestCloseModal} onChangeTaskTitle={v => setForm({...form, title: v})} onChangeTaskDesc={v => setForm({...form, desc: v})} buttonTitle={modal.add ? 'Add Task' : 'Edit Task'} buttonLoading={condition.loadingButton} onPressButton={modal.add ? addTodo : updateTodo} />
     </SafeAreaProvider>
   )
 }
